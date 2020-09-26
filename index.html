@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="nl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <link rel="icon" href="/docs/4.1/assets/img/favicons/favicon.ico">
+
+  <title>Group check</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <style>
+    html, body {height: 100%;}
+
+    body {display: flex; align-items: center; padding-top: 40px 0; background-color: white;}
+
+    .form-calculation {width: 100%; max-width: 330px; padding: 15px; margin: auto;}
+
+    .form-calculation .form-control {position: relative; box-sizing: border-box; height: auto; padding: 10px; font-size: 16px;}
+    .form-calculation .form-control:focus {z-index: 2;}
+
+    .form-calculation input[type="number"] {margin-bottom: 10px; border-top-left-radius: 0; border-top-right-radius: 0;}
+  </style>
+</head>
+
+<body class="text-center">
+  <form class="form-calculation" oninput="totalScore.value = (1-Math.pow((1-inputInfectiousProbability.value), (+inputNumberOfPeople.value))).toFixed(3);">
+    <h1 class="h3 mb-3 font-weight-normal">Groep check</h1>
+
+    <label for="inputNumberOfPeople">Aantal mensen in groep</label>
+    <input type="number" id="inputNumberOfPeople" class="form-control" placeholder="Number of people present" required autofocus value="1">
+
+    <label for="inputInfectiousProbability">Kans dat één persoon geinfecteerd is</label>
+    <p><a onclick="document.getElementById('inputInfectiousProbability').value='.006'">Vul huidig kans voor Nederland in</a></p>
+    <input type="number" id="inputInfectiousProbability" class="form-control" placeholder="Number of infectious people per 100,000 inhabitants" required value=".006">
+
+    <label for="result">Kans dat ten minste één iemand in de groep geinfecteerd is</label>
+    <output id="result" name="totalScore" for="inputNumberOfPeople inputInfectiousProbability">.006</output>
+
+    <hr />
+    
+    <h4>Disclaimer</h4>
+    <p>Deze berekening gaat er van uit dat de kans dat iemand geinfecteerd is in de groep onafhankelijk voor ieder in de groep is.</p>
+  </form>
+</body>
+
+</html>
