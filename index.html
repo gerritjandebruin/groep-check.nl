@@ -11,6 +11,7 @@
   <title>Group check</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
   <style>
     html, body {height: 100%;}
 
@@ -23,6 +24,14 @@
 
     .form-calculation input[type="number"], output {margin-bottom: 2rem; border-top-left-radius: 0; border-top-right-radius: 0;}
   </style>
+  <script>
+    $("#updateInfectiousProbability").click(function(){
+      $.getJSON('https://data.rivm.nl/covid-19/COVID-19_prevalentie.json', function(data) {
+        console.log(data[data.length-1].prev_avg);
+        $('#inputInfectiousProbability').val(Math.round(1000 * data[data.length-1].prev_avg / 17000000) / 1000) ;
+      });
+    })
+  </script>
 </head>
 
 <body>
@@ -36,11 +45,12 @@
       <h1 class="h3 mb-3 font-weight-normal">Groep check</h1>
 
       <label for="inputNumberOfPeople">Aantal mensen in groep</label>
-      <input type="number" id="inputNumberOfPeople" class="form-control" placeholder="Number of people present" required autofocus value="1">
+      <input type="number" id="inputNumberOfPeople" class="form-control" placeholder="Number of people present" required autofocus value="1" />
 
       <label for="inputInfectiousProbability" style="margin-bottom:0;">Kans dat één persoon geinfecteerd is</label>
-      <p><a href="" onclick="document.getElementById('inputInfectiousProbability').value='.006'">Vul huidig kans voor Nederland in</a></p>
-      <input type="number" id="inputInfectiousProbability" class="form-control" placeholder="Number of infectious people per 100,000 inhabitants" required value=".006">
+      <p><a href="" id="updateInfectiousProbability">Vul huidig kans voor Nederland in</a></p>
+      <p id="placeholder"></p>
+      <input type="number" id="inputInfectiousProbability" class="form-control" placeholder="Number of infectious people per 100,000 inhabitants" required value=".006" />
 
       <label for="result">Kans dat ten minste één iemand in de groep geinfecteerd is</label>
       <output id="result" name="totalScore" for="inputNumberOfPeople inputInfectiousProbability">.6</output>%
