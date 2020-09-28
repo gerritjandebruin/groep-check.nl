@@ -10,7 +10,8 @@
 
   <title>Group check</title>
 
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
   <style>
     html, body {height: 100%;}
@@ -23,6 +24,9 @@
     .form-calculation .form-control:focus {z-index: 2;}
 
     .form-calculation input[type="number"], output {margin-bottom: 2rem; border-top-left-radius: 0; border-top-right-radius: 0;}
+
+    #social a {padding: 5px; font-size: 30px; width: 40px; text-align: center; text-decoration: none; margin: 5px 2px; border-radius: 50%; display: inline-block; color: white;}
+    #social a:hover {opacity: .7;}
   </style>
   <script>
     $("#updateInfectiousProbability").click(function(){
@@ -35,30 +39,43 @@
 </head>
 
 <body>
-  <nav class="navbar fixed-top navbar-light bg-light justify-content-end">
+  <nav class="navbar navbar-light bg-light justify-content-end">
     <a class="navbar-brand" href="/">nl</a>
     <a class="navbar-brand" href="/en.html">en</a>
   </nav>
 
   <div>
     <form class="form-calculation text-center" oninput="totalScore.value = Math.round(1000*(1-Math.pow((1-inputInfectiousProbability.value), (+inputNumberOfPeople.value))))/10;">
-      <h1 class="h3 mb-3 font-weight-normal">Groep check</h1>
+      <h1 class="mb-3 font-weight-normal">Check corona in groep</h1>
+      <h2 class="h4 text-secondary mb-3 font-weight-normal">Bereken de kans op een coronabesmetting</h2>
 
       <label for="inputNumberOfPeople">Aantal mensen in groep</label>
       <input type="number" id="inputNumberOfPeople" class="form-control" placeholder="Number of people present" required autofocus value="1" />
 
       <label for="inputInfectiousProbability" style="margin-bottom:0;">Kans dat één persoon geinfecteerd is</label>
-      <p><a href="" id="updateInfectiousProbability">Vul huidig kans voor Nederland in</a></p>
+      <p><a href="" id="updateInfectiousProbability">Gebruik huidig kans voor Nederland</a></p>
       <p id="placeholder"></p>
       <input type="number" id="inputInfectiousProbability" class="form-control" placeholder="Number of infectious people per 100,000 inhabitants" required value=".006" />
 
       <label for="result">Kans dat ten minste één iemand in de groep geinfecteerd is</label>
-      <output id="result" name="totalScore" for="inputNumberOfPeople inputInfectiousProbability">.6</output>%
+      <p class="h1"><output id="result" name="totalScore" for="inputNumberOfPeople inputInfectiousProbability">0.6</output>%</p>
+
+      <!-- <hr />
+      <h4>Share this page</h4>
+      <div id="social" class="d-flex justify-content-center">
+        <a href="#" class="fa fa-facebook" style="background: #3B5998;"></a>
+        <a href="#" class="fa fa-twitter" style="background: #55ACEE;"></a>
+        <a href="#" class="fa fa-linkedin" style="background: #007bb5;"></a>
+        <a href="#" class="fa fa-reddit" style="background: #ff5700;"></a>
+        <a href="#" class="fa fa-github" style="background: #ff922b;"></a>
+      </div> -->
+      
 
       <hr />
       
       <h4>Disclaimer</h4>
       <p>Deze berekening gaat er van uit dat de kans dat iemand geinfecteerd is in de groep onafhankelijk voor iedereen in de groep is.</p>
+      <p>Er wordt gebruik gemaakt van de <a href="https://nl.wikipedia.org/wiki/Binomiale_verdeling" target="_blank">binominale verdeling</a> om de kans op besmetting te berekenen.</p>
     </form>
   </div>
 </body>
