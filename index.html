@@ -3,12 +3,13 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
-  <link rel="icon" href="/docs/4.1/assets/img/favicons/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <meta property="og:description" name="description" content="Groep-check.nl kan je gebruiken om de kans op een Corona-besmetting in een grote groep mensen te bepalen." />
+  <meta property="og:title" content="Groep check" />
+  <meta property="og:locale" content="nl_NL" />
+  <meta name="author" content="Gerrit-Jan de Bruin" />
 
-  <title>Group check</title>
+  <title>Groep check</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
@@ -16,68 +17,86 @@
   <style>
     html, body {height: 100%;}
 
-    div {display: flex; align-items: center; padding-top: 40px 0; background-color: white;}
+    nav .btn {width: 3rem;}
 
-    .form-calculation {width: 100%; max-width: 330px; padding: 15px; margin: auto;}
+    main {width: 100%; max-width: 400px; padding: 15px; margin: auto;}
+    main, input, footer {text-align: center;}
+    footer {line-height: 1;}
 
     .form-calculation .form-control {position: relative; box-sizing: border-box; height: auto; padding: 10px; font-size: 16px;}
     .form-calculation .form-control:focus {z-index: 2;}
-
-    .form-calculation input[type="number"], output {margin-bottom: 2rem; border-top-left-radius: 0; border-top-right-radius: 0;}
 
     #social a {padding: 5px; font-size: 30px; width: 40px; text-align: center; text-decoration: none; margin: 5px 2px; border-radius: 50%; display: inline-block; color: white;}
     #social a:hover {opacity: .7;}
   </style>
   <script>
-    $("#updateInfectiousProbability").click(function(){
+    function getProbability(){
+      var probability = null;
       $.getJSON('https://data.rivm.nl/covid-19/COVID-19_prevalentie.json', function(data) {
-        console.log(data[data.length-1].prev_avg);
-        $('#inputInfectiousProbability').val(Math.round(1000 * data[data.length-1].prev_avg / 17000000) / 1000) ;
+        var lastData = data[data.length-1];
+        probability = (lastData.prev_avg / 17000000);
+
+        console.log("Cijfers zijn van:", lastData.Date);
+        console.log("Besmettelijke mensen in Nederland:", lastData.prev_avg);
+        console.log("Kans besmetting in Nederland:", probability);
+        $('#inputInfectiousProbability').val(Math.round(probability*10000)/10000);
+        $('#result').val(Math.round(1000*(1-Math.pow(1-probability, +inputNumberOfPeople.value)))/10);
+        $('#placeholder').text('Deze cijfers zijn van ' + lastData.Date + '.') 
       });
-    })
+    }
+
+    $(document).ready(function(){
+      getProbability();
+      $("#inputInfectiousProbability").change(function(){$('#placeholder').text('');}); // Hide text when input probability changed.
+    });
+    
   </script>
 </head>
 
 <body>
-  <nav class="navbar navbar-light bg-light justify-content-end">
-    <a class="navbar-brand" href="/">nl</a>
-    <a class="navbar-brand" href="/en.html">en</a>
+  <nav class="navbar bg-dark justify-content-end">
+    <a class="navbar-brand btn btn-primary"   role="button" href="/"       >nl</a>
+    <a class="navbar-brand btn btn-secondary" role="button" href="/en.html">en</a>
   </nav>
 
-  <div>
+  <main>
     <form class="form-calculation text-center" oninput="totalScore.value = Math.round(1000*(1-Math.pow((1-inputInfectiousProbability.value), (+inputNumberOfPeople.value))))/10;">
       <h1 class="mb-3 font-weight-normal">Check corona in groep</h1>
       <h2 class="h4 text-secondary mb-3 font-weight-normal">Bereken de kans op een coronabesmetting</h2>
 
       <label for="inputNumberOfPeople">Aantal mensen in groep</label>
-      <input type="number" id="inputNumberOfPeople" class="form-control" placeholder="Number of people present" required autofocus value="1" />
+      <input style="margin-bottom: 2rem;" type="number" id="inputNumberOfPeople" class="form-control" placeholder="Number of people present" required autofocus value="1" />
 
       <label for="inputInfectiousProbability" style="margin-bottom:0;">Kans dat één persoon geinfecteerd is</label>
-      <p><a href="" id="updateInfectiousProbability">Gebruik huidig kans voor Nederland</a></p>
-      <p id="placeholder"></p>
-      <input type="number" id="inputInfectiousProbability" class="form-control" placeholder="Number of infectious people per 100,000 inhabitants" required value=".006" />
+      <p><a href="" id="updateInfectiousProbability">Gebruik huidig kans voor Nederland</a> <a href="https://data.rivm.nl/covid-19/" target="_blank">[RIVM]</a></p> 
+      <input type="number" id="inputInfectiousProbability" class="form-control" required value=".0086" />
+      <p id="placeholder" style="margin-bottom: 2rem;" class="text-muted"></p>
 
       <label for="result">Kans dat ten minste één iemand in de groep geinfecteerd is</label>
       <p class="h1"><output id="result" name="totalScore" for="inputNumberOfPeople inputInfectiousProbability">0.6</output>%</p>
 
       <hr />
-      <h4>Share this page</h4>
+      <h4>Deel deze pagina</h4>
       <div id="social" class="d-flex justify-content-center">
-        <a href="#" class="fa fa-facebook" style="background: #3B5998;"></a>
-        <a href="#" class="fa fa-twitter" style="background: #55ACEE;"></a>
-        <a href="#" class="fa fa-linkedin" style="background: #007bb5;"></a>
-        <a href="#" class="fa fa-reddit" style="background: #ff5700;"></a>
-        <a href="#" class="fa fa-github" style="background: #ff922b;"></a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.groep-check.nl/" class="fa fa-facebook" style="background: #3B5998;"></a>
+        <a href="https://twitter.com/intent/tweet?text=Check+het+risico+op+corona+in+je+groep+op+www.groep-check.nl%2F%21" class="fa fa-twitter" style="background: #55ACEE;"></a>
+        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://groep-check.nl&title=Groep%20check" class="fa fa-linkedin" style="background: #007bb5;"></a>
+        <a href="https://www.reddit.com/submit?url=https://groep-check.nl&title=Groep+check" class="fa fa-reddit" style="background: #ff5700;"></a>
+        <a href="https://github.com/gerritjandebruin/groep-check" class="fa fa-github" style="background: #ff922b;"></a>
       </div>
       
-
       <hr />
       
       <h4>Disclaimer</h4>
       <p>Deze berekening gaat er van uit dat de kans dat iemand geinfecteerd is in de groep onafhankelijk voor iedereen in de groep is.</p>
       <p>Er wordt gebruik gemaakt van de <a href="https://nl.wikipedia.org/wiki/Binomiale_verdeling" target="_blank">binominale verdeling</a> om de kans op besmetting te berekenen.</p>
     </form>
-  </div>
+
+  </main>
+  <footer class='text-muted'><small>
+    Deze website is gemaakt door <a href="https://gerritjandebruin.nl" target="_blank">Gerrit-Jan de Bruin</a> en wordt gehost door middel van <a href="https://github.com/gerritjandebruin/groep-check" target="_blank">Github Pages</a>.<br />
+    Opmerkingen zijn <a href="https://github.com/gerritjandebruin/groep-check/issues/new" target="_blank">hier</a> welkom.
+  </small></footer>
 </body>
 
 </html>
