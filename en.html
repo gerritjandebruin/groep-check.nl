@@ -32,13 +32,18 @@
   <script>
     function getProbability(){
       var probability = null;
+      var probability_low = null;
+      var probability_up = null;
       $.getJSON('https://data.rivm.nl/covid-19/COVID-19_prevalentie.json', function(data) {
         var lastData = data[data.length-1];
         probability = (lastData.prev_avg / 17000000);
+        probability_low = (lastData.prev_low / 17000000);
+        probability_up = (lastData.prev_up / 17000000);
 
         console.log("Date RIVM data:", lastData.Date);
         console.log("Number of infectious people in NL:", lastData.prev_avg);
-        console.log("Probability:", probability);
+        if (isNaN(probability)) {probability = (probability_up + probability_low) / 2; }
+        console.log("Probability:", probability, "(", probability_low, "-", probability_up, ")");
         $('#inputInfectiousProbability').val(Math.round(probability*10000)/10000);
         $('#result').val(Math.round(1000*(1-Math.pow(1-probability, +inputNumberOfPeople.value)))/10);
         $('#placeholder').text('This number is from ' + lastData.Date + '.') 

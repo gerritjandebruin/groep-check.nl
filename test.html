@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      $.getJSON('https://data.rivm.nl/covid-19/COVID-19_prevalentie.json', function(data) {
+        google.charts.load('current', {packages: ['corechart', 'line']});
+
+        console.log(data);
+        $.each(data, function(key, val){console.log(key, val.prev_avg)});
+
+        google.charts.setOnLoadCallback(function(){
+          var data = google.visualization.DataTable()
+          data.addColumn('int', 'index');
+          data.addColumn('float', 'value');
+          $.each(data, function(key, val){console.log(key, val.prev_avg)});
+        })
+      });
+    </script>
+  </head>
+
+  <body>
+    <!--Div that will hold the pie chart-->
+    <div id="chart_div"></div>
+  </body>
+</html>
