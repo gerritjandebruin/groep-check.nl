@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
   <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
   <style>
     html, body {height: 100%;}
 
@@ -21,40 +22,76 @@
 
     main {width: 100%; max-width: 400px; padding: 15px; margin: auto;}
     main, input, footer {text-align: center;}
+    #rivmData, #ownData {height: 62px;}
+    input[type="number"] {width: 5rem !important;}
     footer {line-height: 1;}
-
-    .form-calculation .form-control {position: relative; box-sizing: border-box; height: auto; padding: 10px; font-size: 16px;}
-    .form-calculation .form-control:focus {z-index: 2;}
 
     #social a {padding: 5px; font-size: 30px; width: 40px; text-align: center; text-decoration: none; margin: 5px 2px; border-radius: 50%; display: inline-block; color: white;}
     #social a:hover {opacity: .7;}
   </style>
   <script>
-    function getProbability(){
-      var probability = null;
-      var probability_low = null;
-      var probability_up = null;
+    const percentage = (x) => Math.round(x*10000)/100;
+    const calculation = (prob, people) => Math.round(1000*(1-Math.pow(1-prob, +people.value)))/10;
+
+    function getRIVM(){
       $.getJSON('https://data.rivm.nl/covid-19/COVID-19_prevalentie.json', function(data) {
-        var lastData = data[data.length-1];
+        let lastData = data[data.length-1];
+
+        console.log("Cijfers zijn van:", lastData.Date);
+        console.log("Besmettelijke mensen in Nederland:", lastData.prev_avg, "(", lastData.prev_low, "-", lastData.prev_up, ")");
+
         probability = (lastData.prev_avg / 17000000);
         probability_low = (lastData.prev_low / 17000000);
         probability_up = (lastData.prev_up / 17000000);
 
-        console.log("Cijfers zijn van:", lastData.Date);
-        console.log("Besmettelijke mensen in Nederland:", lastData.prev_avg);
         if (isNaN(probability)) {probability = (probability_up + probability_low) / 2; }
         console.log("Kans besmetting in Nederland:", probability, "(", probability_low, "-", probability_up, ")");
 
-
-        $('#inputInfectiousProbability').val(Math.round(probability*10000)/10000);
-        $('#result').val(Math.round(1000*(1-Math.pow(1-probability, +inputNumberOfPeople.value)))/10);
-        $('#placeholder').text('Deze cijfers zijn van ' + lastData.Date + '.') 
+        $('#rivmNow').val(probability);
+        $('#rivmLow').val(percentage(probability_low));
+        $('#rivmUp').val(percentage(probability_up));
+        $('#rivmDate').text('Deze cijfers zijn van ' + lastData.Date + '.');
+        calculate();
       });
     }
 
+    function calculate(){ 
+      if ($('#rivmInput').is(':checked')) { 
+        $('#resultLow').val(calculation(probability_low, numberPeople));
+        $('#resultUp').val(calculation(probability_up, numberPeople));
+      } else { 
+        $('#resultAvg').val(calculation($('#ownAvg').val() / 100, numberPeople));
+      } 
+    }
+
+    function changeInput(){
+      if ($('#rivmInput').is(':checked')){
+        $("#rivmData").show();
+        $("#ownData").hide();
+        $("#ownOutput").hide();
+        $("#rivmOutput").show();
+        calculate();
+
+      } else {
+        $("#rivmData").hide();
+        $("#ownData").show();
+        $("#ownOutput").show();
+        $("#rivmOutput").hide();
+        calculate();
+      }
+     }
+
     $(document).ready(function(){
-      getProbability();
-      $("#inputInfectiousProbability").change(function(){$('#placeholder').text('');}); // Hide text when input probability changed.
+      $("#ownOutput").hide();
+      $("#ownData").hide();
+      var input = "RIVM";
+      var probability = 0;
+      var probability_low = 0;
+      var probability_up = 0;
+      getRIVM();
+      $('#numberPeople').change(calculate);
+      $('#ownAvg').change(calculate);
+      $('input[type=radio]').change(changeInput);
     });
     
   </script>
@@ -67,37 +104,66 @@
   </nav>
 
   <main>
-    <form class="form-calculation text-center" oninput="totalScore.value = Math.round(1000*(1-Math.pow((1-inputInfectiousProbability.value), (+inputNumberOfPeople.value))))/10;">
+    <form>
       <h1 class="mb-3 font-weight-normal">Check corona in groep</h1>
       <h2 class="h4 text-secondary mb-3 font-weight-normal">Bereken de kans op een coronabesmetting</h2>
 
-      <label for="inputNumberOfPeople">Aantal mensen in groep</label>
-      <input style="margin-bottom: 2rem;" type="number" id="inputNumberOfPeople" class="form-control" placeholder="Number of people present" required autofocus value="1" />
-
-      <label for="inputInfectiousProbability" style="margin-bottom:0;">Kans dat één persoon geinfecteerd is</label>
-      <p><a href="" id="updateInfectiousProbability">Gebruik huidig kans voor Nederland</a> <a href="https://data.rivm.nl/covid-19/" target="_blank">[RIVM]</a></p> 
-      <input type="number" id="inputInfectiousProbability" class="form-control" required value=".0086" />
-      <p id="placeholder" style="margin-bottom: 2rem;" class="text-muted"></p>
-
-      <label for="result">Kans dat ten minste één iemand in de groep geinfecteerd is</label>
-      <p class="h1"><output id="result" name="totalScore" for="inputNumberOfPeople inputInfectiousProbability">0.6</output>%</p>
-
-      <hr />
-      <h4>Deel deze pagina</h4>
-      <div id="social" class="d-flex justify-content-center">
-        <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.groep-check.nl/" class="fa fa-facebook" style="background: #3B5998;"></a>
-        <a href="https://twitter.com/intent/tweet?text=Check+het+risico+op+corona+in+je+groep+op+www.groep-check.nl%2F%21" class="fa fa-twitter" style="background: #55ACEE;"></a>
-        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://groep-check.nl&title=Groep%20check" class="fa fa-linkedin" style="background: #007bb5;"></a>
-        <a href="https://www.reddit.com/submit?url=https://groep-check.nl&title=Groep+check" class="fa fa-reddit" style="background: #ff5700;"></a>
-        <a href="https://github.com/gerritjandebruin/groep-check" class="fa fa-github" style="background: #ff922b;"></a>
+      <!-- numberPeople input -->
+      <div class="form-group">
+        <label for="numberPeople">Aantal mensen in groep</label>
+        <div class="d-flex justify-content-center"><input type="number" id="numberPeople" class="form-control form-control-sm" autofocus value="1" /></div>
       </div>
-      
-      <hr />
-      
-      <h4>Disclaimer</h4>
-      <p>Deze berekening gaat er van uit dat de kans dat iemand geinfecteerd is in de groep onafhankelijk voor iedereen in de groep is.</p>
-      <p>Er wordt gebruik gemaakt van de <a href="https://nl.wikipedia.org/wiki/Binomiale_verdeling" target="_blank">binominale verdeling</a> om de kans op besmetting te berekenen.</p>
+
+      <!-- dataSource input -->
+      <div class="form-group">
+        <label for="inputInfectiousProbability" >Kans dat één persoon geinfecteerd is</label>
+        <div class="btn-group btn-group-toggle btn-group-sm" data-toggle="buttons">
+          <label class="btn btn-secondary active btn-default">
+            <input type="radio" name="dataSource" id="rivmInput" class="btn-block" checked>RIVM data <a href="https://data.rivm.nl/covid-19/" class="text-white" target="_blank">(bron)</a></input>
+          </label>
+          <label class="btn btn-secondary">
+            <input type="radio" name="dataSource" id="ownInput">Eigen data</input>
+          </label>
+        </div>
+
+        <!-- dataSource: RIVM output -->
+        <div id="rivmData">
+          <p class="h2 m-0"><output id="rivmLow"></output>% - <output id="rivmUp"></output>%</p>
+          <p id="rivmDate" class="text-muted m-0"></p>
+        </div>
+
+        <!-- dataSource: ownData input -->
+        <div id="ownData" style="display: flex; width: 7rem;" class="align-items-centerd-inline-flex align-items-center m-auto input-group input-group-sm">
+          <input id="ownAvg" type="number" class="form-control" value="1"/>
+          <div class="input-group-append"><span class="input-group-text">%</span></div>
+        </div>
+      </div>
+
+      <!-- result -->
+      <div class="form-group">
+        <label>Kans dat ten minste één iemand in de groep geinfecteerd is</label>
+
+        <p class="h1" id="ownOutput"><output id="resultAvg"></output>%</p>
+        <p class="h1" id="rivmOutput"><output id="resultLow"></output>% - <output id="resultUp"></output>%</p>
+      </div>
     </form>
+
+    <!-- Bottom -->
+    <hr />
+    <h4>Deel deze pagina</h4>
+    <div id="social" class="d-flex justify-content-center">
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.groep-check.nl/" class="fa fa-facebook" style="background: #3B5998;"></a>
+      <a href="https://twitter.com/intent/tweet?text=Check+het+risico+op+corona+in+je+groep+op+www.groep-check.nl%2F%21" class="fa fa-twitter" style="background: #55ACEE;"></a>
+      <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://groep-check.nl&title=Groep%20check" class="fa fa-linkedin" style="background: #007bb5;"></a>
+      <a href="https://www.reddit.com/submit?url=https://groep-check.nl&title=Groep+check" class="fa fa-reddit" style="background: #ff5700;"></a>
+      <a href="https://github.com/gerritjandebruin/groep-check" class="fa fa-github" style="background: #ff922b;"></a>
+    </div>
+    
+    <hr />
+    
+    <h4>Disclaimer</h4>
+    <p>Deze berekening gaat er van uit dat de kans dat iemand geinfecteerd is in de groep onafhankelijk voor iedereen in de groep is.</p>
+    <p>Er wordt gebruik gemaakt van de <a href="https://nl.wikipedia.org/wiki/Binomiale_verdeling" target="_blank">binominale verdeling</a> om de kans op besmetting te berekenen.</p>
 
   </main>
   <footer class='text-muted'><small>
